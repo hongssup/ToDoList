@@ -11,13 +11,32 @@ class ViewController: UIViewController {
 
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
+    let tableView: UITableView = {
+        let table = UITableView()
+        table.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        return table
+    }()
+    
+    private var models = [ToDoListItem]()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        title = "To Do List"
+        view.addSubview(tableView)
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.frame = view.bounds
     }
 
+    // MARK: - Core Data
+    
     func getAllItems() {
         do {
-            let items = try context.fetch(ToDoListItem.fetchRequest())
+            models = try context.fetch(ToDoListItem.fetchRequest())
+            
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
         }
         catch {
             // error
@@ -60,3 +79,17 @@ class ViewController: UIViewController {
     }
 }
 
+extension ViewController: UITableViewDelegate, UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return models.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let model = models[indexPath.row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        cell.textLabel?.text = model.name
+        return cell
+    }
+    
+    
+}
