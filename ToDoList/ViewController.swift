@@ -23,9 +23,22 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         title = "To Do List"
         view.addSubview(tableView)
+        getAllItems()
         tableView.delegate = self
         tableView.dataSource = self
         tableView.frame = view.bounds
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(didTapAdd))
+    }
+    
+    @objc private func didTapAdd() {
+        let alert = UIAlertController(title: "New Item", message: "Enter new item", preferredStyle: .alert)
+        alert.addTextField(configurationHandler: nil)
+        alert.addAction(UIAlertAction(title: "Submit", style: .cancel, handler: { [weak self] _ in
+            guard let field = alert.textFields?.first, let text = field.text, !text.isEmpty else { return }
+            self?.createItem(name: text)
+        }))
+        present(alert, animated: true, completion: nil)
     }
 
     // MARK: - Core Data
@@ -50,6 +63,7 @@ class ViewController: UIViewController {
         
         do {
             try context.save()
+            getAllItems()
         }
         catch {
             
