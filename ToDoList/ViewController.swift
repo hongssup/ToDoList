@@ -29,6 +29,7 @@ class ViewController: UIViewController {
         tableView.frame = view.bounds
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(didTapAdd))
+        navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(didTapTrash))
     }
     
     @objc private func didTapAdd() {
@@ -39,6 +40,15 @@ class ViewController: UIViewController {
             self?.createItem(name: text)
         }))
         present(alert, animated: true, completion: nil)
+    }
+    
+    @objc private func didTapTrash() {
+        let sheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        sheet.addAction(UIAlertAction(title: "Delete All", style: .destructive, handler: { [weak self] _ in
+            self?.deleteAllItems()
+        }))
+        present(sheet, animated: true, completion: nil)
     }
 
     // MARK: - Core Data
@@ -85,6 +95,19 @@ class ViewController: UIViewController {
     func updateItem(item: ToDoListItem, newName: String) {
         item.name = newName
         
+        do {
+            try context.save()
+            getAllItems()
+        }
+        catch {
+            
+        }
+    }
+    
+    func deleteAllItems() {
+        for item in models {
+            context.delete(item)
+        }
         do {
             try context.save()
             getAllItems()
